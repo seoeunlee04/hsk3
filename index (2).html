@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSK 3급 단어 파쇄기: 안티그래피티 에디션</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts: Orbitron & Noto Sans KR -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0d0f17;
+            color: #f8fafc;
+            overflow: hidden;
+            user-select: none;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Anti-gravity floating animation */
+        @keyframes floatSlow {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-18px) rotate(3deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .floating {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+        /* Neon glowing effects */
+        .neon-glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.5), inset 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+        .neon-glow-pink {
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.7), inset 0 0 12px rgba(255, 0, 127, 0.4);
+        }
+        .neon-text-cyan {
+            text-shadow: 0 0 12px rgba(0, 243, 255, 0.8);
+        }
+        .neon-text-pink {
+            text-shadow: 0 0 12px rgba(255, 0, 127, 0.8);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 243, 255, 0.4);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between relative">
+
+    <!-- Background Grid Lines & Cosmic Effect -->
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f293720_1px,transparent_1px),linear-gradient(to_bottom,#1f293720_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none z-0"></div>
+
+    <!-- HEADER / TOP HUD -->
+    <header class="relative z-10 w-full px-8 py-5 bg-[#131622]/90 backdrop-blur-md border-b border-cyan-500/30 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-5">
+            <div>
+                <h1 class="font-orbitron font-black text-2xl tracking-wider text-cyan-400 neon-text-cyan">HSK 3급 단어 파쇄기</h1>
+                <p class="text-sm text-cyan-200/80 font-medium">무중력 어휘 결합 배틀 (Level 3)</p>
+            </div>
+            <div class="hidden md:flex bg-slate-900/90 px-4 py-1.5 rounded-full border border-cyan-500/40 text-sm font-orbitron text-cyan-300">
+                TIER: <span id="currentTier" class="font-bold text-pink-400 ml-1.5 text-base">LEVEL 3 MASTER</span>
+            </div>
+        </div>
+
+        <!-- Central Score & Timer -->
+        <div class="flex items-center space-x-8">
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block font-orbitron font-semibold tracking-wider">TIME</span>
+                <span id="timerDisplay" class="font-orbitron text-3xl font-black text-pink-400 neon-text-pink">60</span>
+            </div>
+            <div class="h-10 w-[2px] bg-slate-700"></div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block font-orbitron font-semibold tracking-wider">SCORE</span>
+                <span id="scoreDisplay" class="font-orbitron text-3xl font-black text-cyan-400 neon-text-cyan">0</span>
+            </div>
+            <div class="h-10 w-[2px] bg-slate-700"></div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block font-orbitron font-semibold tracking-wider">COMBO</span>
+                <span id="comboDisplay" class="font-orbitron text-2xl font-black text-amber-400">0x</span>
+            </div>
+        </div>
+
+        <!-- Rival HUD -->
+        <div class="flex items-center space-x-4 bg-slate-900/80 px-5 py-2.5 rounded-2xl border border-pink-500/40 shadow-md">
+            <div class="text-right">
+                <span class="text-xs text-pink-400 font-orbitron font-bold block">RIVAL (AI)</span>
+                <span id="rivalScoreDisplay" class="font-orbitron text-base font-bold text-slate-200">120 pt</span>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-pink-500/20 border-2 border-pink-500 flex items-center justify-center font-orbitron text-sm text-pink-400 font-black shadow-inner">
+                AI
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME ARENA -->
+    <main class="relative z-10 flex-1 flex flex-col items-center justify-center p-6 max-w-6xl mx-auto w-full">
+        
+        <!-- Target Word Prompt / Instruction with Much Larger Font Sizes -->
+        <div id="instructionCard" class="mb-8 bg-slate-900/80 border-2 border-cyan-500/50 rounded-3xl px-10 py-6 text-center shadow-2xl backdrop-blur-md transition-all duration-300 w-full max-w-3xl">
+            <p class="text-sm font-orbitron text-cyan-300 font-bold mb-2 tracking-widest">🎯 TARGET WORD TO ASSEMBLE</p>
+            <div id="targetMeaning" class="text-3xl font-black text-white mb-2 tracking-wide">단어를 보고 올바른 한자들을 순서대로 클릭하세요!</div>
+            <div id="targetPinyin" class="text-lg text-cyan-200/90 font-orbitron font-bold">병음 힌트: --</div>
+        </div>
+
+        <!-- Floating Character Blocks Area (Anti-Gravity Space) with Larger Blocks -->
+        <div id="gameArena" class="relative w-full h-[360px] bg-slate-900/50 border-2 border-slate-700/80 rounded-3xl overflow-hidden flex items-center justify-center shadow-2xl">
+            <!-- Start Overlay -->
+            <div id="startOverlay" class="absolute inset-0 bg-slate-950/85 backdrop-blur-lg flex flex-col items-center justify-center z-20 p-6 text-center">
+                <h2 class="font-orbitron text-4xl font-black text-cyan-400 mb-3 neon-text-cyan">HSK 3급 무중력 파쇄기</h2>
+                <p class="text-slate-200 text-lg mb-8 max-w-xl font-medium leading-relaxed">제한시간 60초 동안 HSK 3급 필수 단어의 한자 조각을 조합하여 터뜨리고 AI 라이벌을 추월하세요!</p>
+                <button onclick="startGame()" class="px-10 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 font-orbitron font-black text-lg text-white rounded-2xl shadow-xl shadow-cyan-500/40 hover:scale-105 active:scale-95 transition-all">
+                    START BATTLE
+                </button>
+            </div>
+        </div>
+
+        <!-- Selection Status Bar with Larger Font Sizes -->
+        <div class="mt-8 flex items-center justify-between w-full max-w-4xl px-4">
+            <div class="flex items-center space-x-4">
+                <span class="text-base font-orbitron text-slate-300 font-bold">현재 조합 선택:</span>
+                <div id="selectedSlot" class="flex space-x-3 min-w-[180px] h-14 bg-slate-900/90 border-2 border-cyan-500/50 rounded-2xl items-center justify-center px-5 text-cyan-300 font-black text-3xl shadow-inner">
+                    <span class="text-slate-500 text-base font-normal">비어있음</span>
+                </div>
+            </div>
+            <button onclick="clearSelection()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-sm font-orbitron text-slate-200 font-bold rounded-2xl border border-slate-600 transition-all shadow-md">
+                선택 초기화
+            </button>
+        </div>
+
+    </main>
+
+    <!-- FOOTER / LOG with Larger Text -->
+    <footer class="relative z-10 w-full px-8 py-4 bg-[#131622]/90 backdrop-blur-md border-t border-cyan-500/30 flex justify-between items-center text-sm font-bold text-slate-300 shadow-inner">
+        <div id="feedbackLog" class="text-cyan-400 text-base">상태: 게임 대기 중... 준비되면 시작 버튼을 누르세요.</div>
+        <div class="font-orbitron text-cyan-300/80">Anti-Gravity Engine v3.0 (HSK Level 3)</div>
+    </footer>
+
+    <!-- GAME OVER / RESULTS MODAL -->
+    <div id="gameOverModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-lg flex items-center justify-center z-50 hidden">
+        <div class="bg-slate-900 border-2 border-cyan-500/60 p-10 rounded-3xl max-w-lg w-full text-center shadow-2xl relative">
+            <h2 class="font-orbitron text-3xl font-black text-cyan-400 mb-2 neon-text-cyan">BATTLE FINISHED</h2>
+            <p class="text-slate-300 text-sm mb-8 font-medium">HSK 3급 최종 성과 리포트</p>
+            
+            <div class="bg-slate-950/80 p-6 rounded-3xl mb-8 border border-slate-800 space-y-4">
+                <div class="flex justify-between items-center text-lg">
+                    <span class="text-slate-300 font-medium">내 최종 점수</span>
+                    <span id="finalScore" class="font-orbitron text-2xl font-black text-cyan-400">0 pt</span>
+                </div>
+                <div class="flex justify-between items-center text-lg">
+                    <span class="text-slate-300 font-medium">라이벌 점수</span>
+                    <span id="finalRivalScore" class="font-orbitron text-2xl font-black text-pink-400">0 pt</span>
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-800 pt-4 text-lg">
+                    <span class="text-slate-300 font-medium">달성 티어</span>
+                    <span id="finalTier" class="font-orbitron font-black text-amber-400 text-xl">LEVEL 3 MASTER</span>
+                </div>
+            </div>
+
+            <button onclick="resetGame()" class="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 font-orbitron font-black text-lg text-white rounded-2xl shadow-xl shadow-cyan-500/40 hover:scale-105 active:scale-95 transition-all">
+                RETRY BATTLE
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // HSK 3급 단어 데이터베이스 세트 (2~3음절 필수 단어)
+        const hsk3Words = [
+            { word: "机场", pinyin: "jīchǎng", meaning: "공항", chars: ["机", "场"], tip: "비행기(机)가 뜨는 넓은 마당/장소(场)!" },
+            { word: "照顾", pinyin: "zhàogù", meaning: "돌보다", chars: ["照", "顾"], tip: "비추고(照) 돌아보며(顾) 보살피다!" },
+            { word: "附近", pinyin: "fùjìn", meaning: "근처/부근", chars: ["附", "近"], tip: "붙어있고(附) 가까운(近) 곳!" },
+            { word: "安静", pinyin: "ānjìng", meaning: "조용하다", chars: ["安", "静"], tip: "마음이 편안하고(安) 고요하다(静)!" },
+            { word: "准备", pinyin: "zhǔnbèi", meaning: "준비하다", chars: ["准", "备"], tip: "기준을 맞추고(准) 갖추어 대비하다(备)!" },
+            { word: "习惯", pinyin: "xíguàn", meaning: "습관", chars: ["习", "惯"], tip: "익히고(习) 몸에 배어 익숙해지다(惯)!" },
+            { word: "容易", pinyin: "róngyì", meaning: "쉽다", chars: ["容", "易"], tip: "받아들이기 쉽고(容) 수월하다(易)!" },
+            { word: "欢迎", pinyin: "huānyíng", meaning: "환영하다", chars: ["欢", "迎"], tip: "기뻐하며(欢) 맞이하여 영접하다(迎)!" },
+            { word: "决定", pinyin: "juédìng", meaning: "결정하다", chars: ["决", "定"], tip: "결단하고(决) 확정하여 정하다(定)!" },
+            { word: "特别", pinyin: "tèbié", meaning: "특별하다", chars: ["特", "别"], tip: "특별하고(特) 구별되다(别)!" }
+        ];
+
+        let gameState = {
+            score: 0,
+            combo: 0,
+            timeLeft: 60,
+            isPlaying: false,
+            timerInterval: null,
+            rivalInterval: null,
+            rivalScore: 100,
+            currentWordObj: null,
+            selectedChars: [],
+            activeBlocks: []
+        };
+
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const comboDisplay = document.getElementById('comboDisplay');
+        const rivalScoreDisplay = document.getElementById('rivalScoreDisplay');
+        const gameArena = document.getElementById('gameArena');
+        const startOverlay = document.getElementById('startOverlay');
+        const targetMeaning = document.getElementById('targetMeaning');
+        const targetPinyin = document.getElementById('targetPinyin');
+        const selectedSlot = document.getElementById('selectedSlot');
+        const feedbackLog = document.getElementById('feedbackLog');
+        const gameOverModal = document.getElementById('gameOverModal');
+        const finalScore = document.getElementById('finalScore');
+        const finalRivalScore = document.getElementById('finalRivalScore');
+        const finalTier = document.getElementById('finalTier');
+
+        function startGame() {
+            startOverlay.classList.add('hidden');
+            gameOverModal.classList.add('hidden');
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.timeLeft = 60;
+            gameState.rivalScore = 90;
+            gameState.isPlaying = true;
+
+            updateHUD();
+            nextRound();
+
+            // 타이머 시작
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+                timerDisplay.textContent = gameState.timeLeft;
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+
+            // 라이벌 점수 상승 시뮬레이션
+            gameState.rivalInterval = setInterval(() => {
+                if (!gameState.isPlaying) return;
+                gameState.rivalScore += Math.floor(Math.random() * 30) + 15;
+                rivalScoreDisplay.textContent = gameState.rivalScore + " pt";
+            }, 2600);
+        }
+
+        function nextRound() {
+            if (!gameState.isPlaying) return;
+            
+            // 랜덤 HSK 3급 단어 선택
+            const randomIndex = Math.floor(Math.random() * hsk3Words.length);
+            gameState.currentWordObj = hsk3Words[randomIndex];
+            gameState.selectedChars = [];
+            renderSelectedSlot();
+
+            targetMeaning.textContent = `[뜻] ${gameState.currentWordObj.meaning} (${gameState.currentWordObj.word.trim()})`;
+            targetPinyin.textContent = `병음 힌트: ${gameState.currentWordObj.pinyin}`;
+
+            // 블록 생성 (정답 한자 + 함정 한자 2개 추가)
+            let charPool = [...gameState.currentWordObj.chars];
+            const decoyChars = ["过", "化", "者", "性", "度", "动", "门", "书"];
+            while(charPool.length < 4) {
+                const randomDecoy = decoyChars[Math.floor(Math.random() * decoyChars.length)];
+                if(!charPool.includes(randomDecoy)) charPool.push(randomDecoy);
+            }
+            // 섞기
+            charPool.sort(() => Math.random() - 0.5);
+
+            // 아레나 렌더링 (매우 큰 한자 폰트 크기 적용)
+            gameArena.innerHTML = '';
+            gameState.activeBlocks = charPool.map((char, index) => {
+                const el = document.createElement('div');
+                const posX = 12 + (index * 22) + (Math.random() * 4);
+                const posY = 15 + (Math.random() * 45);
+                
+                el.className = `absolute px-8 py-6 bg-slate-800/95 border-2 border-cyan-500/60 rounded-3xl text-4xl md:text-5xl font-black text-cyan-300 neon-glow-cyan cursor-pointer hover:bg-cyan-400 hover:text-slate-950 transition-all floating shadow-2xl`;
+                el.style.left = `${posX}%`;
+                el.style.top = `${posY}%`;
+                el.style.animationDelay = `${index * 0.4}s`;
+                el.textContent = char;
+
+                el.onclick = () => handleCharClick(char, el);
+                gameArena.appendChild(el);
+                return { char, el };
+            });
+        }
+
+        function handleCharClick(char, element) {
+            if (!gameState.isPlaying) return;
+            
+            // 시각적 선택 효과
+            element.classList.add('scale-90', 'bg-cyan-400', 'text-slate-950');
+            setTimeout(() => element.classList.remove('scale-90'), 150);
+
+            gameState.selectedChars.push(char);
+            renderSelectedSlot();
+
+            // 정답 검증 조건 확인
+            if (gameState.selectedChars.length === gameState.currentWordObj.chars.length) {
+                const assembled = gameState.selectedChars.join('');
+                if (assembled === gameState.currentWordObj.chars.join('')) {
+                    // 정답!
+                    gameState.combo++;
+                    const bonus = gameState.combo * 25;
+                    const earnedScore = 100 + bonus;
+                    gameState.score += earnedScore;
+                    
+                    feedbackLog.textContent = `[성공!] ${gameState.currentWordObj.word.trim()} 조합 완료! 💡 팁: ${gameState.currentWordObj.tip}`;
+                    feedbackLog.className = "text-emerald-400 font-bold text-base";
+
+                    triggerSuccessEffect();
+                    updateHUD();
+
+                    setTimeout(() => {
+                        nextRound();
+                    }, 1400);
+                } else {
+                    // 오답!
+                    gameState.combo = 0;
+                    gameState.score = Math.max(0, gameState.score - 25);
+                    feedbackLog.textContent = `[오답!] 올바른 순서가 아닙니다. 다시 시도하세요. (-25pt)`;
+                    feedbackLog.className = "text-pink-500 font-bold text-base";
+                    updateHUD();
+                    
+                    setTimeout(() => {
+                        gameState.selectedChars = [];
+                        renderSelectedSlot();
+                    }, 600);
+                }
+            }
+        }
+
+        function renderSelectedSlot() {
+            if (gameState.selectedChars.length === 0) {
+                selectedSlot.innerHTML = `<span class="text-slate-500 text-lg font-normal">비어있음</span>`;
+            } else {
+                selectedSlot.innerHTML = gameState.selectedChars.map(c => `<span class="text-cyan-300 font-black">${c}</span>`).join(' ');
+            }
+        }
+
+        function clearSelection() {
+            gameState.selectedChars = [];
+            renderSelectedSlot();
+        }
+
+        function triggerSuccessEffect() {
+            gameArena.classList.add('neon-glow-pink');
+            setTimeout(() => gameArena.classList.remove('neon-glow-pink'), 350);
+        }
+
+        function updateHUD() {
+            scoreDisplay.textContent = gameState.score;
+            comboDisplay.textContent = gameState.combo + "x";
+        }
+
+        function endGame() {
+            gameState.isPlaying = false;
+            clearInterval(gameState.timerInterval);
+            clearInterval(gameState.rivalInterval);
+
+            finalScore.textContent = gameState.score + " pt";
+            finalRivalScore.textContent = gameState.rivalScore + " pt";
+            
+            let tier = "HSK 3급 우수생";
+            if (gameState.score >= 750) tier = "HSK 3급 마스터";
+            else if (gameState.score >= 450) tier = "HSK 3급 전문가";
+            finalTier.textContent = tier;
+
+            gameOverModal.classList.remove('hidden');
+        }
+
+        function resetGame() {
+            gameOverModal.classList.add('hidden');
+            startOverlay.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
